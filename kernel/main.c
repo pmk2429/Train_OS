@@ -21,6 +21,7 @@ void kernel_main()
     init_com();
     init_keyb();
     init_shell();
+    start_kb();
 
     while (1);
 }

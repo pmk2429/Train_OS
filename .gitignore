@@ -1,0 +1,3 @@
+# ignoring the shell.c file
+kernel/shell.c
+kernel/shell.o
