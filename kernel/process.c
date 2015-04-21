@@ -6,6 +6,7 @@ PCB pcb[MAX_PROCS];
 PCB *next_free_pcb;
 
 
+// method to create process and allocate process block for each process
 PORT create_process (void (*ptr_to_new_proc) (PROCESS, PARAM),
 		     int prio,
 		     PARAM param,
