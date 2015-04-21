@@ -411,8 +411,11 @@ void init_interrupts()
     init_idt_entry (14, exception14);
     init_idt_entry (15, exception15);
     init_idt_entry (16, exception16);
+    // interrupt entry for TIMER.
     init_idt_entry (TIMER_IRQ, isr_timer);
+    // interrupt entry for COM1 Port.
     init_idt_entry (COM1_IRQ, isr_com1);
+    // interrupt entry for Keyboard.
     init_idt_entry (KEYB_IRQ, isr_keyb);
     
     re_program_interrupt_controller();
