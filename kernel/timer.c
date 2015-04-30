@@ -24,21 +24,21 @@ void timer_process (PROCESS self, PARAM param)
     create_process(timer_notifier, 7, 0, "Timer notifier");
 
     while (42) {
-	msg = (Timer_Message*) receive(&sender);
-	if (msg == NULL) {
-	    // The timer notifier sent us a message
-	    for (i = 0; i < MAX_PROCS; i++) {
-		if (ticks_left[i] == 0) continue;
-		if (--ticks_left[i] == 0) {
-		    // Wake up client
-		    reply(&pcb[i]);
+		msg = (Timer_Message*) receive(&sender);
+		if (msg == NULL) {
+			// The timer notifier sent us a message
+			for (i = 0; i < MAX_PROCS; i++) {
+				if (ticks_left[i] == 0) continue;
+				if (--ticks_left[i] == 0) {
+				// Wake up client
+				reply(&pcb[i]);
+				}
+			}
+		} else {
+			// A client sent us a message
+			i = sender - pcb;
+			ticks_left[i] = msg->num_of_ticks;
 		}
-	    }
-	} else {
-	    // A client sent us a message
-	    i = sender - pcb;
-	    ticks_left[i] = msg->num_of_ticks;
-	}
     }
 }
 

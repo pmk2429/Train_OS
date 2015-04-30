@@ -95,8 +95,8 @@ void print_process_details(WINDOW* wnd, PROCESS p)
 	  "INTR_BLOCKED   "
 	};
     if (!p->used) {
-	wprintf(wnd, "PCB slot unused!\n");
-	return;
+		wprintf(wnd, "PCB slot unused!\n");
+		return;
     }
     /* State */
     wprintf(wnd, state[p->state]);
