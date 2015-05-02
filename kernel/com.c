@@ -41,13 +41,13 @@ void com_reader_process (PROCESS self, PARAM param)
     
     reply_port = (PORT) param;
     while (1) {
-	msg = (COM_Message*) receive (&sender_proc);
-	i = 0;
-	while (i != msg->len_input_buffer) {
-	    wait_for_interrupt (COM1_IRQ);
-	    msg->input_buffer[i++] = inportb (COM1_PORT);
-	}
-	message (reply_port, &msg);
+		msg = (COM_Message*) receive (&sender_proc);
+		i = 0;
+		while (i != msg->len_input_buffer) {
+			wait_for_interrupt (COM1_IRQ);
+			msg->input_buffer[i++] = inportb (COM1_PORT);
+		}
+		message (reply_port, &msg);
     }
 }
 

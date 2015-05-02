@@ -162,6 +162,7 @@ typedef struct _PORT_DEF {
     struct _PORT_DEF *next;            /* Next port */
 } PORT_DEF;
 
+extern PORT_DEF port[];
 
 PORT create_port();
 PORT create_new_port (PROCESS proc);
@@ -268,6 +269,8 @@ void init_keyb();
 /*=====>>> shell.c <<<===================================================*/
 
 void init_shell();
+
+//void init_command(char *name, int (*func) (int argc, char **argv), char *description, command *command);
 
 /*=====>>> train.c <<<===================================================*/
 
