@@ -21,6 +21,7 @@ typedef int BOOL;
 int k_strlen(const char* str);
 void* k_memcpy(void* dst, const void* src, int len);
 int k_memcmp(const void* b1, const void* b2, int len);
+int k_strcmp(const char* str1, const char* str2);
 
 
 /*=====>>> mem.c <<<========================================================*/
@@ -268,9 +269,21 @@ void init_keyb();
 
 /*=====>>> shell.c <<<===================================================*/
 
+#define MAX_COMMANDS 15
+
 void init_shell();
 
-//void init_command(char *name, int (*func) (int argc, char **argv), char *description, command *command);
+typedef struct _command_definition
+{
+	int (*func) (int argc, char **argv);
+    char *name;
+    char *description;
+} command;
+
+void tos_prompt();
+void print_string(char* str);
+int trim_whitespaces(char*, int);
+void dispatch_command(void (*func) , char *name, char *description, command *command);
 
 /*=====>>> train.c <<<===================================================*/
 

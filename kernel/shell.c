@@ -5,35 +5,15 @@
 #define KB_ENTER '\015'
 #define KB_BACK '\010'
 
+// Array of commands in tos shell.
+command commands_array[MAX_COMMANDS + 1];
+
 char *cmd_string; 
 char *arguments;
 
-void tos_clr();
-int  tos_string_compare(char*, char*);
-void print_string(char*);
-void talk_to_com(char*);
-void start_kb();
-void tos_ps();
-void tos_prompt();
-void tos_ports();
-int clear_whites(char*, int);
-void com1_example(char*);
-void com2_example(char*);
-
-// init_shell() method will initialize the Shell process.
-void init_shell()
-{
-	start_kb();
-}
-
-
-
-void start_kb(PROCESS self, PARAM param)
-{
-	 //DISABLE_INTR(flag);
-	
-	  //create_process(to_be_killed, 5, 0, "Bad Process");
-		
+// the main shell process
+void shell_process(PROCESS self, PARAM param)
+{		
 	 // clear the window every time you open the shell.
 	 clear_window(kernel_window);
 	  
@@ -48,13 +28,9 @@ void start_kb(PROCESS self, PARAM param)
 	 char* input_string;
 	 char* cmd_string;
 	 int char_num = 0;
-	 // char valid_cmd_chars[] = "abcdefghijklmnopqrstuvwxyz0123456789";
 	 char clr[] 	= "clr";
 	 char ps[] 		= "ps";
 	 char ports[] 	= "ports";
-	 char run[]     = "run";
-	 char check[]   = "check";
-	 char stop[] 	= "stop";
 	 while (1) { 
 		msg.key_buffer = &ch;
 		send(keyb_port, &msg);
@@ -67,7 +43,7 @@ void start_kb(PROCESS self, PARAM param)
 			
 			
 			// 2. trim whitespaces 
-			char_num = clear_whites(input_string, char_num);
+			char_num = trim_whitespaces(input_string, char_num);
 			
 			// appending NULL character at end of String for comparison
 			*(cmd_string+char_num) = '\0';
@@ -76,27 +52,20 @@ void start_kb(PROCESS self, PARAM param)
 			char_num 		= 0;
 			
 			// check if the comparison is made properly or not
-			if(tos_string_compare(cmd_string, ports))
-				tos_ports();
-			else if(tos_string_compare(cmd_string, ps))
-				tos_ps();
-			else if(tos_string_compare(cmd_string, clr))
-				tos_clr();	
-			else if(tos_string_compare(cmd_string, run))
-				com1_example("L20S4\015");	
-			else if(tos_string_compare(cmd_string, stop))
-				com2_example("L20S0\015");	
-			else if(tos_string_compare(cmd_string, check))
-				com3_example("C1\015");
+			if(k_strcmp(cmd_string, ports))
+				used_ports_shell();
+			else if(k_strcmp(cmd_string, ps))
+				print_all_processes_shell();
+			else if(k_strcmp(cmd_string, clr))
+				clear_screen_shell();	
 			else
 			{
 				kprintf("\n Error: Bad Command. Please check Syntax. \n ");
 			}
 			
+			// display the prompt
 			tos_prompt();
 			
-			//pass the Command String to COM1 port. 
-			//talk_to_com(cmd_string);
 		}
 		else if(ch == KB_BACK) // there was a backspace hit, decrement char counter
 		{
@@ -112,7 +81,7 @@ void start_kb(PROCESS self, PARAM param)
 	//ENABLE_INTR(flag);
 } 
 
-int clear_whites(char *input_ch, int char_num){
+int trim_whitespaces(char *input_ch, int char_num){
 	
 	int i = 0;
 	int j = 0;
@@ -152,26 +121,6 @@ int clear_whites(char *input_ch, int char_num){
 		
 }
 
-
-int tos_string_compare(char* str1, char* str2)
-{		
-	while(*str1 == *str2)
-	{	
-		if(*str1 == '\0' || *str2 == '\0'){
-			break;
-		}
-		str1++;
-		str2++;
-	}	
-	if(*str1 == '\0' && *str2 == '\0'){
-		return 1;
-	}
-	else{
-		return 0;
-	}
-}
-
-
 void print_string(char* str)
 {
 	while(*str != '\0')
@@ -182,7 +131,6 @@ void print_string(char* str)
 /* TOS SHELL COMMANDS START HERE */
 
 // function to show command prompt
-
 void tos_prompt(){
 
 	kprintf("\n#tos -> ");
@@ -190,13 +138,12 @@ void tos_prompt(){
 }
 
 // function to clear screen
-void tos_clr(){
+void clear_screen_shell(){
 	clear_window(kernel_window);		
 }
 
-// function to print list of processes 
-
-void tos_ps(){
+// function to print list of all running processes 
+void print_all_processes_shell(){
 	
 	int i;
     PCB* p = pcb;
@@ -231,8 +178,8 @@ void tos_ps(){
     }
 }
 
-// function to print list of ports 
-void tos_ports(){
+// function to print list of all used ports 
+void used_ports_shell(){
 	int i;
 	PORT_DEF *pr = port;
 	PROCESS ps; 
@@ -252,44 +199,44 @@ void tos_ports(){
 
 /*
  * dispatch_command() method dispatches the function call to the appropriate command
- * by entered by the user on Shell prompt.
+ * entered by the user on Shell prompt.
+ * This function is used for the definition of the dipatch_command()
  * */
-void dispatch_command(int (*func) (int argc, char **argv), char *name, char *description, command *cmd) 
+void dispatch_command(void (*func) , char *name, char *description, command *cmd) 
 {
 	cmd->name = name;
 	cmd->func = func;
 	cmd->description = description;
 }
 
-void com1_example(char* cmd_string) 
-{ 
-    char buffer [12]; 
-    COM_Message msg; 
-    msg.output_buffer    = cmd_string; 
-    msg.input_buffer     = buffer; 
-    msg.len_input_buffer = 0; 
-    send(com_port, &msg); 
-} 
-
-void com2_example(char* cmd_string) 
-{ 
-    char buffer [12]; 
-    COM_Message msg; 
-    msg.output_buffer    = cmd_string; 
-    msg.input_buffer     = buffer; 
-    msg.len_input_buffer = 0; 
-    send(com_port, &msg); 
-} 
-
-
-void com3_example(char* cmd_string) 
-{ 
-    char buffer [12];  
-    COM_Message msg; 
-    msg.output_buffer    = cmd_string; 
-    msg.input_buffer     = buffer; 
-    msg.len_input_buffer = 3; 
-    send(com_port, &msg); 
-    kprintf ("%c", buffer[1]); 
-} 
-
+/* 
+ * init_shell() method will initialize the Shell process functions which associated with each commands
+ * entered on the prompt.
+ * 
+ * */
+void init_shell()
+{
+	// counter to store the functions in the commands array.
+	int counter = 0;
+	
+	// initialize all the functions for commands
+	dispatch_command(print_all_processes_shell, "prps", "Displays a list of all running processes", &commands_array[counter++]);
+	dispatch_command(clear_screen_shell, "clr", "Use to clear the shell window", &commands_array[counter++]);
+	//dispatch_command(init_train_shell, "train", "Initialize and start Train process", &commands_array[counter++]);
+	dispatch_command(used_ports_shell, "ports", "Displays a list of all used ports", &commands_array[counter++]);
+	//dispatch_command(echo_shell, "echo", "Echoes the function arguments", &commands_array[counter++]);
+	
+	
+	// assign the NULL to each of the remaining commands in the array.
+	while(i < MAX_COMMANDS){
+		dispatch_command(NULL, "NCF", "No command found", &commands_array[counter++]);
+	}
+	commands_array[MAX_COMMANDS].name 			= "NULL";
+	commands_array[MAX_COMMANDS].func 			= "NULL";
+	commands_array[MAX_COMMANDS].description 	= "NULL";
+	
+	
+	// once all functions are initialized, create the shell process.
+	create_process(shell_process, 3, 0, "Shell Process");
+	resign();
+}
