@@ -119,7 +119,6 @@ void shell_process(PROCESS self, PARAM param)
 	 Keyb_Message msg;
 	 
 	 char* input_string;
-	 char* cmd_string;
 	 int char_num = 0;
 	 command* command_var;
 	 // caller function for dispatching it to appropriate function call as per user input.
@@ -137,7 +136,7 @@ void shell_process(PROCESS self, PARAM param)
 				// 1. get the string typed on the shell prompt
 				
 				// 2. trim whitespaces 
-				char_num = trim_whitespaces(input_string, char_num);
+				trim_whitespaces(input_string, cmd_string, arguments,  char_num);
 				
 				// appending NULL character at end of String for comparison
 				*(cmd_string+char_num) = '\0';
