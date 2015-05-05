@@ -42,7 +42,7 @@ command* lookup_command_array(const command *commands, const char *user_input_co
 
 
 // trim the whitespaces from the input string
-int trim_whitespaces(char *input_ch, char *cmd, char *arg, int char_num){
+void trim_whitespaces(char *input_ch, char *cmd, char *arg, int char_num){
 	
 	int i = 0;
 	int j = 0;
