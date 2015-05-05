@@ -275,7 +275,7 @@ void init_shell();
 
 typedef struct _command_definition
 {
-	int (*func) (int argc, char **argv);
+	void (*func);
     char *name;
     char *description;
 } command;
@@ -283,6 +283,7 @@ typedef struct _command_definition
 void tos_prompt();
 void print_string(char* str);
 int trim_whitespaces(char*, int);
+command* lookup_command_array(const command *commands, const char *user_input_command);
 void dispatch_command(void (*func) , char *name, char *description, command *command);
 
 /*=====>>> train.c <<<===================================================*/
