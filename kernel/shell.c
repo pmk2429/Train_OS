@@ -1,9 +1,5 @@
 #include <kernel.h>
-
-#define KB_SPACE '\040'
-#define KB_TAB '\011'
-#define KB_ENTER '\015'
-#define KB_BACK '\010'
+#include <keystrokes.h>
 
 // Array of commands in tos shell.
 command commands_array[MAX_COMMANDS + 1];
@@ -101,11 +97,9 @@ void shell_process(PROCESS self, PARAM param)
 	 char* input_string;
 	 char* cmd_string;
 	 int char_num = 0;
-	 char clr[] 	= "clr";
-	 char ps[] 		= "ps";
-	 char ports[] 	= "ports";
 	 command* command_var;
-	 //void (*caller_function)();
+	 // caller function for dispatching it to appropriate function call as per user input.
+	 void (*caller_function)();
 	 
 	 
 	 while (1) { 
@@ -117,7 +111,6 @@ void shell_process(PROCESS self, PARAM param)
 			if(ch == KB_ENTER){
 						
 				// 1. get the string typed on the shell prompt
-				
 				
 				// 2. trim whitespaces 
 				char_num = trim_whitespaces(input_string, char_num);

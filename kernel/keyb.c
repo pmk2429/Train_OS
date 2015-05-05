@@ -8,6 +8,13 @@ PORT keyb_port;
 #define KBIT            0x80
 #define MAXSIZE         1024
 
+
+#define KB_SPACE '\040'
+#define KB_TAB '\011'
+#define KB_ENTER '\015'
+#define KB_BACK '\010'
+
+
 /* Variables indicating scancodes */
 static unsigned char brk = 0;
 static unsigned ignore = 0;
