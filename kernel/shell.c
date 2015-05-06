@@ -1,14 +1,15 @@
 #include <kernel.h>
 #include <keystrokes.h>
 
-static WINDOW shell_window = {0, 11, 80, 15, 0, 0, 0xA6, TRUE, "Shell"};
-static WINDOW shell_border = {0, 10, 80, 15, 0, 0, 0xA6, TRUE, "Shell Border"};
+WINDOW train_window = {0, 0, 80, 10, 0, 0, ' '};
+WINDOW shell_window = {0, 11, 80, 15, 0, 0, 0xA6, TRUE, "Shell"};
+static WINDOW shell_border = {0, 10, 80, 2, 0, 0, 0xA6, TRUE, "Shell Border"};
 
 // Array of commands in tos shell.
 command commands_array[MAX_COMMANDS + 1];
 
-char *cmd_string = "."; 
-char *arguments = "";
+char arguments[20] = "";
+char cmd_string[10] = ""; 
 
 /*
  * dispatch_command() method dispatches the function call to the appropriate command
@@ -42,7 +43,7 @@ command* lookup_command_array(const command *commands, const char *user_input_co
 
 
 // trim the whitespaces from the input string
-void trim_whitespaces(char *input_ch, char *cmd, char *arg, int char_num){
+void trim_whitespaces(char *input_ch, int char_num){
 	
 	int i = 0;
 	int j = 0;
@@ -60,13 +61,13 @@ void trim_whitespaces(char *input_ch, char *cmd, char *arg, int char_num){
 		{
 			 if(is_first_block == FALSE)
 			 {
-				*(arg+j) = ' ';
+				arguments[j] = ' ';
 				j++;
 			 }
 			else
 			{
 				// command string found, add a terminator and prepare to capture arguments 
-				*(cmd+j) = '\0';
+				cmd_string[j] = '\0';
 				j=0; 						// reset J so it can be used again for arguments
 				is_first_block = FALSE;
 				
@@ -81,9 +82,9 @@ void trim_whitespaces(char *input_ch, char *cmd, char *arg, int char_num){
 	else
 	{
 		if(is_first_block == TRUE)
-			*(cmd+j) = ch;
+			cmd_string[j] = ch;
 		else
-			*(arg+j) = ch;
+			arguments[j] = ch;
 		
 		j++;
 		in_command = TRUE;
@@ -91,12 +92,12 @@ void trim_whitespaces(char *input_ch, char *cmd, char *arg, int char_num){
   }
 	
 	if(is_first_block == TRUE)			// if only one word is entered, command string need to be terminated
-	*(cmd+j) = '\0';
+		cmd_string[j] = '\0';
 	
 	if(in_command == FALSE)				// if last character is a space move pointer one space backwards
 	j--;
 	
-	*(arg+j) = '\0';					// terminate the argument string
+	 	*(arguments+j) = '\0';						// terminate the argument string
 		
 		
 }
@@ -136,7 +137,7 @@ void shell_process(PROCESS self, PARAM param)
 				// 1. get the string typed on the shell prompt
 				
 				// 2. trim whitespaces 
-				trim_whitespaces(input_string, cmd_string, arguments,  char_num);
+				trim_whitespaces(input_string, char_num);
 				
 				// appending NULL character at end of String for comparison
 				*(cmd_string+char_num) = '\0';
@@ -209,7 +210,7 @@ void print_all_processes_shell(){
 	int i;
     PCB* p = pcb;
     
-    wprintf(&shell_window, "PCB Priority State           Active Name\n");;
+    wprintf(&shell_window, "PCB Priority State 		         Active State / Active Process\n");;
     for (i = 1; i < MAX_PROCS; i++, p++) {
 		
 		// if pcb is not used, skip
@@ -229,12 +230,12 @@ void print_all_processes_shell(){
 		wprintf(&shell_window, "  %2d     ", p->priority); // priority 
 		wprintf(&shell_window, state[p->state]);      		// state
 		
-		if (p == active_proc)          		// active process?     
-			wprintf(&shell_window, " *      ");
+		if (p == active_proc)          						// active process?     
+			wprintf(&shell_window, "         *      ");
 		else
- 			wprintf(&shell_window, "        ");
+ 			wprintf(&shell_window, "           ");
 		
-		wprintf(&shell_window, "%s\n", p->name);	;	   		// process name 
+		wprintf(&shell_window, "      %s\n", p->name);	   		// process name 
 				
     }
 }
@@ -272,6 +273,15 @@ void echo_shell(){
 	
 }
 
+// function to start train 
+void init_train_shell(){
+	
+	wprintf(&shell_window,"\nInitializing Train Process...");
+	init_train();
+	
+}
+
+
 /* 
  * init_shell() method will initialize the Shell process functions which associated with each commands
  * entered on the prompt.
@@ -287,7 +297,7 @@ void init_shell()
 	dispatch_command(clear_screen_shell, "clr", "Use to clear the shell window", &commands_array[counter++]);
 	dispatch_command(used_ports_shell, "ports", "Displays a list of all used ports", &commands_array[counter++]);
 	dispatch_command(echo_shell, "echo", "Echoes the function arguments", &commands_array[counter++]);
-	//dispatch_command(init_train_shell, "train", "Initialize and start Train process", &commands_array[counter++]);
+	dispatch_command(init_train_shell, "train", "Initialize and start Train process", &commands_array[counter++]);
 	
 	
 	// assign the NULL to each of the remaining commands in the array.
@@ -300,6 +310,6 @@ void init_shell()
 	
 	
 	// once all functions are initialized, create the shell process.
-	create_process(shell_process, 3, 0, "Shell Process");
+	create_process(shell_process, 5, 0, "Shell Process");
 	resign();
 }

@@ -270,6 +270,8 @@ void init_keyb();
 /*=====>>> shell.c <<<===================================================*/
 
 #define MAX_COMMANDS 15
+extern WINDOW shell_window;
+extern WINDOW train_window;
 
 void init_shell();
 
@@ -282,13 +284,15 @@ typedef struct _command_definition
 
 void tos_prompt();
 void print_string(char* str);
-void trim_whitespaces(char*, char*, char*, int);
+void trim_whitespaces(char*, int);
 command* lookup_command_array(const command *commands, const char *user_input_command);
 void dispatch_command(void (*func) , char *name, char *description, command *command);
 
 /*=====>>> train.c <<<===================================================*/
 
-void init_train(WINDOW* wnd);
+extern command train_cmd[];
+//void init_train(WINDOW* wnd);
+void init_train();
 void set_train_speed(char* speed);
 
 /*=====>>> pacman.c <<<==================================================*/
