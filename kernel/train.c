@@ -1,9 +1,9 @@
 
 #include <kernel.h>
 
-
 #define CARRIGE_RETURN "\015"
 #define TRAIN "20"
+
 //**************************
 //run the train application
 //**************************
@@ -232,7 +232,7 @@ void config4()
 void config1z()
 {
 	
-	wprintf(&train_window, "Starting config 1 with Zamboni...\n");
+	wprintf(&train_window, "Running Configuration 1 with Zamboni...\n");
 	// set switches required for train path
 	set_switch("5","G");
 	set_switch("9","R");
@@ -273,7 +273,7 @@ void config1z()
 
 void config2z()
 {
-	wprintf(&train_window, "Starting config 2 with Zamboni...\n");
+	wprintf(&train_window, "Running Configuration 2 with Zamboni...\n");
 	
 	// set switches required for train path
 	set_switch("8","R");
@@ -311,7 +311,7 @@ void config2z()
 
 void config3z()
 {
-	wprintf(&train_window, "Starting config 3 with Zamboni...\n");
+	wprintf(&train_window, "Running Configuration 3 with Zamboni...\n");
 	// set switches required for train path
 	set_switch("5","G");
 	set_switch("9","R");
@@ -413,7 +413,7 @@ void config3z()
 void config4z()
 {
 	
-	wprintf(&train_window, "Starting config 4 with Zamboni...\n");
+	wprintf(&train_window, "Running Configuration 4 with Zamboni...\n");
 	
 	change_speed("4");
 	
@@ -486,7 +486,6 @@ void config4z()
 			break; 
 		}
 	}
-		
 }
 
 
@@ -494,6 +493,7 @@ void config4z()
 // initialize the tracks for default configuration.
 void initialize_tracks()
 {
+	wprintf(&train_window, "Initializing tracks for default configuration...\n");
 	// if zamboni travels clockwise 
 	set_switch("5","G");
 	set_switch("9","R");
@@ -507,7 +507,7 @@ void initialize_tracks()
 
 
 // function to probe the presence of Zamboni and its direction.
-int probe_zamboni_direction()
+int probe_zamboni_status_direction()
 {
 	// initialize the tracks once the config started
 	initialize_tracks();
@@ -520,7 +520,7 @@ int probe_zamboni_direction()
 	// loop until the the counter detects the track segment 6.
 	for(counter = 0; counter < 35; counter++)
 	{
-		wprintf(&train_window, ". ");
+		wprintf(&train_window, ">... \n");
 	 	if(get_segment_status("6") == '1')
 		{ 
 			flag = 1; 
@@ -531,7 +531,7 @@ int probe_zamboni_direction()
 	if(flag){
 		for(counter = 0; counter < 5; counter++)
 		{
-			wprintf(&train_window, "... ");
+			wprintf(&train_window, ">...\n");
 				
 			if(get_segment_status("7") == '1')
 			{ flag = 2; break; }
@@ -553,17 +553,15 @@ int probe_zamboni_direction()
 	
 	// by the end of this loop we will get to know that is Zamboni present or not
 	// and If Zamboni is present, what is the direction of Zamboni.	
-	
-	
 	return flag;
 }
 
 
 // find configuration and execute 
-void find_configuration()
+void init_train_configuration()
 {	
 	int conf = 0;
-	int direction = probe_zamboni_direction();
+	int direction = probe_zamboni_status_direction();
 	
 	
 	// detect vehicle positions 
@@ -620,11 +618,11 @@ void find_configuration()
 } 
 
 
-
 //////////////////////////////////////////////////////////////////////
 void train_process(PROCESS self, PARAM param)
 {	
-	find_configuration();
+	// initialize the train configuration.
+	init_train_configuration();
 	
 	// remove the train process from ready queue and resign.
 	remove_ready_queue(active_proc);
