@@ -33,7 +33,7 @@ void send_command(char *action, int len_buffer, char *input_buffer)
     msg.len_input_buffer = len_buffer;
     msg.input_buffer = input_buffer;
     
-    sleep(20);
+    sleep(15);
     
     wprintf(&train_window, "Executing: %s", train_cmd);
     
@@ -490,8 +490,7 @@ void config4z()
 }
 
 // find configuration and execute 
-
-void find_config()
+void find_configuration()
 {	
 	int conf = 0;
 	int direction = 0; 
@@ -508,7 +507,7 @@ void find_config()
 			{direction = 2; break; }
 	}	
 		
-	initialize_tracks();
+	//initialize_tracks();
 	
 	// detect vehicle positions 
 	if(get_segment_status("5") == '1')
@@ -563,13 +562,52 @@ void find_config()
 		
 	}
 	
-	
-	
-	
-	
 } 
 
-// function to set tracks such that zamboni, if present, will not go off the boundries.
+// function to probe the presence of Zamboni and its direction.
+void probe_zamboni_direction()
+{
+	// initialize the tracks once the config started
+	initialize_tracks();
+	
+	int flag = 0;
+	int counter=0;
+	char* present;
+	char* direction;
+	
+	for(counter = 0; counter <35; counter++)
+	{
+	 	if(get_segment_status("6") == '1')
+		{ flag = 1; break; }
+	}
+	
+	if(flag){
+		for(counter = 0; counter < 5; counter++)
+		{	
+			if(get_segment_status("7") == '1')
+			{ flag = 2; break; }
+			
+			if(get_segment_status("4") == '1')
+			{ flag = 3; break; }
+		}
+	}
+	
+	
+	if(flag){present = "PRESENT";}
+	else{present = "NOT PRESENT";}
+
+	if(flag == 2){direction = "CLOCKWISE";}
+	if(flag == 3){direction = "ANTI-CLOCKWISE";}
+	
+	wprintf(&train_window, "Zamboni is '%s'",  present);
+	wprintf(&train_window, " and moving in '%s'\n",  direction);
+	
+	// by the end of this loop we will get to know that is Zamboni present or not
+	// and If Zamboni is present, what is the direction of Zamboni.	
+}
+
+
+// initialize the tracks for default configuration.
 void initialize_tracks()
 {
 	// if zamboni travels clockwise 
@@ -580,17 +618,14 @@ void initialize_tracks()
 	// if zamboni travels anti-clockwise
 	set_switch("8","G");
 	set_switch("4","G");
-	
-	
 }
-
-
 
 // main train process
 void train_process(PROCESS self, PARAM param)
 {	
-	find_config();
+	find_configuration();
 	
+	// remove the train process from ready queue and resign.
 	remove_ready_queue(active_proc);
 	resign();
 }
