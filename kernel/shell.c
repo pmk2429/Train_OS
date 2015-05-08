@@ -152,8 +152,8 @@ void shell_process(PROCESS self, PARAM param)
 				
 				if (command_var->func == NULL)
 				{
-					//wprintf(shell_wnd, "Unknown Command: %s\n", history_current->buffer);
-					wprintf(&shell_window, "\n Error: Bad Command. Please check syntax.");
+					// print error messages for command not found.
+					wprintf(&shell_window, "Command '%s' not found. Type <help> for list of functions.", cmd_string);
 				}
 				else
 				{	
