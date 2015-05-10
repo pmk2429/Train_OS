@@ -2,99 +2,114 @@
 #include <kernel.h>
 
 #define CARRIGE_RETURN "\015"
-#define TRAIN "20"
+#define RED_TRAIN "20"
+
+//WINDOW* &train_window;
 
 //**************************
 //run the train application
 //**************************
 
-void append_cmd(char* target, char* tail)
+// function to build the final command by appending 
+void build_command(char* final_command, char* command_pieces)
 {
 	
 	int i = 0;
-	int target_length = k_strlen(target);
+	int command_length = k_strlen(final_command);
 	
-	for(i=0; *tail != '\0'; i++)
-		target[target_length+i] = *tail++;
+	for(i=0; *command_pieces != '\0'; i++){
+		final_command[command_length + i] = *command_pieces++;
+	}
 		
-	// determine the length of the target 	
 }
 
-// function to send command to the train
-
-void send_command(char *action, int len_buffer, char *input_buffer)
+// function to send command to the train via COM1_PORT.
+void send_command(char *action, int len_input_buffer, char *input_buffer)
 {
-	char train_cmd[20] = "";
-	append_cmd(train_cmd, action);
-	append_cmd(train_cmd, CARRIGE_RETURN);
+	char train_command[20] = "";
+	build_command(train_command, action);
+	build_command(train_command, CARRIGE_RETURN);
 	
 	COM_Message msg;
-	msg.output_buffer = train_cmd;
-    msg.len_input_buffer = len_buffer;
+	msg.output_buffer = train_command;
+    msg.len_input_buffer = len_input_buffer;
     msg.input_buffer = input_buffer;
     
     sleep(15);
     
-    wprintf(&train_window, "-----: %s", train_cmd);
+    wprintf(&train_window, "-----: %s", train_command);
     
     send(com_port, &msg);
 }
 
-void change_speed(char* speed)
+
+/*
+	this function is called to set the speed of train (0-5).
+*/
+void set_train_speed(char* speed)
 {
+
 	char action[10] = "L";
 	char dummy; 
-	append_cmd(action, TRAIN);
-	append_cmd(action, "S");
-	append_cmd(action, speed);
+	build_command(action, RED_TRAIN);
+	build_command(action, "S");
+	build_command(action, speed);
 
 	send_command(action, 0, &dummy);
 	
 }
 
+// changes the direction of the train.
 void change_direction()
 {
 	char action[10] = "L";
 	char dummy; 
-	append_cmd(action, TRAIN);
-	append_cmd(action, "D");
+	build_command(action, RED_TRAIN);
+	build_command(action, "D");
 
+	// finally when the command for change_direction is built, simply send the command
 	send_command(action, 0, &dummy);
 	
 }
 
-
-void stop_train()
+// sets the train speed to 0.
+void stop_func_train()
 {
-	change_speed("0");
+	set_train_speed("0");
 }
 
+// set_switch function is called to set the switches of the track segments.
 void set_switch(char *switch_id, char *color)
 {
 	// M4R
 	char action[10] = "M";
 	char dummy; 
-	append_cmd(action, switch_id);
-	append_cmd(action, color);
+	build_command(action, switch_id);
+	build_command(action, color);
 
 	send_command(action, 0, &dummy);
 	
 }
 
+// clear the s88 buffer everytime check is made for presence of vehicle on tracks.
 void clear_s88_buffer()
 {
 	char dummy;
 	send_command("R", 0, &dummy);
 }
 
-char get_segment_status(char* segmentID)
+/* 
+	this function is used to prob the track segment to check if any vehicle is present or not.
+   	the segmentID is the id of the particular segment where check is to be performed
+*/
+char probe_track_segment(char* segmentID)
 {
 	// return 0 if not on the segment and 1 if the train is present on the given segment
 	char action[5] = "C";
 	char input[3];
 	char dummy; 
 	
-	append_cmd(action, segmentID);
+	build_command(action, segmentID);
 	
 	// clear the s88 buffer for every 
 	clear_s88_buffer();
@@ -107,8 +122,33 @@ char get_segment_status(char* segmentID)
 }
 
 
+////////////////////////////////////////////////////////////////////////
+//************* Functions for Commands executed from Shell************//
+
+
+void help_function_train(const command *commands){
+
+	wprintf(&train_window, "\nCommands for Train App\n");
+	wprintf(&train_window, "-------------------------------------------------------\n");
+	int i;
+
+	for (i = 6; commands[i].func != NULL; i++)
+	{
+		wprintf(&train_window, " - %s:  %s\n", commands[i].name, commands[i].description);
+	}
+
+}
+
+void demo_function(char* args){
+	wprintf(&train_window, "\nArguments: %s", args);
+}
+
+///////////////////////////////////////////////////////////////
+
+
+
 // function to solve config 1 or 2 without zamboni 
-void config12()
+void configuration_1_2()
 {	
 	wprintf(&train_window, "\n\n               Running Configuration 1 | 2 without Zamboni...\n\n");
 	
@@ -118,13 +158,13 @@ void config12()
 	set_switch("5","R");
 	set_switch("6","R");	
 	
-	change_speed("5");
+	set_train_speed("5");
 	
 	while(1)
 	{
-	 	if(get_segment_status("1") == '1')
+	 	if(probe_track_segment("1") == '1')
 	 	{
-			stop_train();
+			stop_func_train();
 			break;
 		}
 			
@@ -133,23 +173,23 @@ void config12()
 	
 	change_direction();
 	wprintf(&train_window, "\n\n                Going back to base...\n\n");
-	change_speed("5");
+	set_train_speed("5");
 	
 	while(1)
 	{
-	 	if(get_segment_status("8") == '1')
+	 	if(probe_track_segment("8") == '1')
 	 	{
-			stop_train();
+			stop_func_train();
 			break;
 		}
 	}
 	
-	print_status_message();
+	//print_status_message();
 	
 }
 
 // train configuration 3 without zamboni 
-void config3()
+void configuration_3()
 {
 	
 	wprintf(&train_window, "\n\n               Running Configuration 3 without Zamboni...\n\n");
@@ -162,39 +202,39 @@ void config3()
 	set_switch("3","R");
 	set_switch("8","G");
 	
-	change_speed("4");
+	set_train_speed("4");
 	
 	while(1)
 	{
-	 	if(get_segment_status("12") == '1')
-	 	{ stop_train(); break; }
+	 	if(probe_track_segment("12") == '1')
+	 	{ stop_func_train(); break; }
 	}
 	
 	change_direction();
-	change_speed("4");
+	set_train_speed("4");
 	
 	while(1)
 	{
-	 	if(get_segment_status("13") == '1')
-	 	{ stop_train(); break; }
+	 	if(probe_track_segment("13") == '1')
+	 	{ stop_func_train(); break; }
 	}
 	
 	change_direction();
 	wprintf(&train_window, "\n\n                  Going back to base...\n\n");
-	change_speed("5");
+	set_train_speed("5");
 	
 	while(1)
 	{
-	 	if(get_segment_status("5") == '1')
-	 	{ stop_train(); break; }
+	 	if(probe_track_segment("5") == '1')
+	 	{ stop_func_train(); break; }
 	}	
 	
-	print_status_message();
+	//print_status_message();
 }
 
 
 // train configuration 4 without zamboni 
-void config4()
+void configuration_4()
 {
 	
 	wprintf(&train_window, "\n\n               Running Configuration 4 without Zamboni...\n\n");
@@ -205,36 +245,35 @@ void config4()
 	set_switch("3","R");
 	set_switch("4","R");
 	
-	change_speed("4");
+	set_train_speed("4");
 	
 	while(1)
 	{
-	 	if(get_segment_status("14") == '1')
+	 	if(probe_track_segment("14") == '1')
 	 	{ 
 			sleep(1300);
-			stop_train(); 
+			stop_func_train(); 
 			break; 
 		}
 	}
 	
 	change_direction();
 	wprintf(&train_window, "\n\n                Going back to base...\n\n");
-	change_speed("5");
+	set_train_speed("5");
 	
 	while(1)
 	{
-	 	if(get_segment_status("5") == '1')
-	 	{ stop_train(); break; }
+	 	if(probe_track_segment("5") == '1')
+	 	{ stop_func_train(); break; }
 	}	
 	
 	
-	print_status_message();
+	//print_status_message();
 }
 
 
 // configuration 1 with zamboni 
-
-void config1z()
+void configuration_1_With_Zamboni()
 {
 	
 	wprintf(&train_window, "\n\n               Running Configuration 1 with Zamboni...\n\n");
@@ -247,8 +286,8 @@ void config1z()
 	
 	while(1)
 	{
-	 	if(get_segment_status("12") == '1')
-	 	{ change_speed("4"); break; }
+	 	if(probe_track_segment("12") == '1')
+	 	{ set_train_speed("4"); break; }
 	}	
 	
 	set_switch("5","R");
@@ -258,27 +297,27 @@ void config1z()
 	
 	while(1)
 	{
-	 	if(get_segment_status("1") == '1')
-	 	{ stop_train(); break; }
+	 	if(probe_track_segment("1") == '1')
+	 	{ stop_func_train(); break; }
 	}	
 	
 	change_direction();
 	wprintf(&train_window, "\n\n                 Going back to base...\n\n");
-	change_speed("5");
+	set_train_speed("5");
 	
 	while(1)
 	{
-	 	if(get_segment_status("8") == '1')
-	 	{ stop_train(); break; }
+	 	if(probe_track_segment("8") == '1')
+	 	{ stop_func_train(); break; }
 	}	
 	
 	
-	print_status_message();
+	//print_status_message();
 }
 
 
 // configuration 1 with zamboni 
-void config2z()
+void configuration_2_With_Zamboni()
 {
 	wprintf(&train_window, "\n\n               Running Configuration 2 with Zamboni...\n\n");
 	
@@ -287,8 +326,8 @@ void config2z()
 	
 	while(1)
 	{
-	 	if(get_segment_status("11") == '1')
-	 	{ change_speed("4"); break; }
+	 	if(probe_track_segment("11") == '1')
+	 	{ set_train_speed("4"); break; }
 	}	
 	
 	set_switch("5","R");
@@ -298,28 +337,27 @@ void config2z()
 	
 	while(1)
 	{
-	 	if(get_segment_status("1") == '1')
-	 	{ stop_train(); break; }
+	 	if(probe_track_segment("1") == '1')
+	 	{ stop_func_train(); break; }
 	}	
 	
 	change_direction();
 	wprintf(&train_window, "\n\n                  Going back to base...\n\n");
-	change_speed("5");
+	set_train_speed("5");
 	
 	while(1)
 	{
-	 	if(get_segment_status("8") == '1')
-	 	{ stop_train(); break; }
+	 	if(probe_track_segment("8") == '1')
+	 	{ stop_func_train(); break; }
 	}	
 	
 	
-	print_status_message();
+	//print_status_message();
 }
 
 
-// configuration 3z
-
-void config3z()
+// configuration 3 with zamboni
+void configuration_3_With_Zamboni()
 {
 	wprintf(&train_window, "\n\n               Running Configuration 3 with Zamboni...\n\n");
 	// set switches required for train path
@@ -329,13 +367,16 @@ void config3z()
 	
 	while(1)
 	{
-	 	if(get_segment_status("6") == '1')
-	 	{ change_speed("4"); break; }
+	 	if(probe_track_segment("6") == '1')
+	 	{ 
+	 		set_train_speed("4"); 
+	 		break; 
+	 	}
 	}	
 	
 	while(1)
 	{
-	 	if(get_segment_status("10") == '1')
+	 	if(probe_track_segment("10") == '1')
 	 	{ 	set_switch("5","R");
 			set_switch("6","G");
 			break; 
@@ -344,11 +385,12 @@ void config3z()
 	
 	while(1)
 	{
-	 	if(get_segment_status("12") == '1')
-	 	{ stop_train(); 
-		  set_switch("5","G");	
-		  set_switch("7","R");	
-		  break;
+	 	if(probe_track_segment("12") == '1')
+	 	{ 
+	 		stop_func_train(); 
+		  	set_switch("5","G");	
+		  	set_switch("7","R");	
+		  	break;
 		}
 	}	
 	
@@ -356,41 +398,44 @@ void config3z()
 	
 	while(1)
 	{
-	 	if(get_segment_status("14") == '1')
+	 	if(probe_track_segment("14") == '1')
 	 	{
-	
-			change_speed("4");
+			set_train_speed("4");
 			break;
 		}
 	}
 	
 	while(1)
 	{
-	 	if(get_segment_status("13") == '1')
-	 	{   stop_train(); 
+	 	if(probe_track_segment("13") == '1')
+	 	{   
+	 		stop_func_train(); 
 			set_switch("8","R");
 			break; 
 		}
 	}	
 	
 	change_direction();
-	change_speed("4");
+	set_train_speed("4");
 	
 	while(1)
 	{
-	 	if(get_segment_status("12") == '1')
-	 	{ stop_train(); 
-		  set_switch("7","G"); 	
-			break; }
+	 	if(probe_track_segment("12") == '1')
+	 	{ 
+	 		stop_func_train(); 
+		  	set_switch("7","G"); 	
+			break;
+		 }
 	}	
 	
 	change_direction();
 	wprintf(&train_window, "\n\n               Going back to base...\n\n");
+
 	while(1)
 	{
-	 	if(get_segment_status("13") == '1')
+	 	if(probe_track_segment("13") == '1')
 	 	{ 	
-			change_speed("4");
+			set_train_speed("4");
 			
 			set_switch("9","R");
 			set_switch("1","R");
@@ -404,7 +449,7 @@ void config3z()
 	
 	while(1)
 	{
-	 	if(get_segment_status("9") == '1')
+	 	if(probe_track_segment("9") == '1')
 	 	{  
 			set_switch("7","R");
 			break; 
@@ -413,22 +458,22 @@ void config3z()
 	
 	while(1)
 	{
-	 	if(get_segment_status("5") == '1')
-	 	{ stop_train(); break; }
+	 	if(probe_track_segment("5") == '1')
+	 	{ 
+	 		stop_func_train(); 
+	 		break; 
+	 	}
 	}	
-	
-	
-	print_status_message();
 
 }
 
 
-void config4z()
+void configuration_4_With_Zamboni()
 {
 	
 	wprintf(&train_window, "\n\n		     Running Configuration 4 with Zamboni...\n\n");
 	
-	change_speed("4");
+	set_train_speed("4");
 	
 	set_switch("8","R");
 	set_switch("5","R");
@@ -436,14 +481,14 @@ void config4z()
 	
 	while(1)
 	{
-	 	if(get_segment_status("9") == '1')
-	 	{ stop_train(); break; }
+	 	if(probe_track_segment("9") == '1')
+	 	{ stop_func_train(); break; }
 	}	
 	
 	while(1)
 	{
-	 	if(get_segment_status("12") == '1')
-	 	{ change_speed("4"); break; }
+	 	if(probe_track_segment("12") == '1')
+	 	{ set_train_speed("4"); break; }
 	}		
 
 	set_switch("8","G");
@@ -454,26 +499,26 @@ void config4z()
 	
 	while(1)
 	{
-	 	if(get_segment_status("14") == '1')
-	 	{ stop_train(); break; }
+	 	if(probe_track_segment("14") == '1')
+	 	{ stop_func_train(); break; }
 	}
 	
 	change_direction();
 	wprintf(&train_window, "\n\n                 Going back to base...");
-	change_speed("4");
+	set_train_speed("4");
 	sleep(1000);
-	stop_train();
+	stop_func_train();
 	change_direction();
 	
 	while(1)
 	{
-	 	if(get_segment_status("14") == '1')
-	 	{ change_speed("4"); break; }
+	 	if(probe_track_segment("14") == '1')
+	 	{ set_train_speed("4"); break; }
 	}
 	
 	while(1)
 	{
-	 	if(get_segment_status("4") == '1')
+	 	if(probe_track_segment("4") == '1')
 	 	{ 	set_switch("4","R");
 			set_switch("3","R"); 
 			
@@ -484,7 +529,7 @@ void config4z()
 	
 	while(1)
 	{
-	 	if(get_segment_status("3") == '1')
+	 	if(probe_track_segment("3") == '1')
 	 	{ 	
 			set_switch("8","R");
 			break; 
@@ -493,17 +538,17 @@ void config4z()
 	
 	while(1)
 	{
-	 	if(get_segment_status("5") == '1')
-	 	{ 	stop_train();
+	 	if(probe_track_segment("5") == '1')
+	 	{ 	stop_func_train();
 			break; 
 		}
 	}
 	
-	print_status_message();
+	//print_status_message();
 }
 
 
-
+// print the status of the job once its done.
 void print_status_message()
 {
 	wprintf(&train_window, "\n\n       Mission Accomplished => Wagon taken back successfully!");
@@ -545,7 +590,7 @@ int probe_zamboni_status_direction()
 	for(counter = 0; counter < 35; counter++)
 	{
 		wprintf(&train_window, ">..... %d\n", counter);
-	 	if(get_segment_status("6") == '1')
+	 	if(probe_track_segment("6") == '1')
 		{ 
 			flag = 1; 
 			break; 	
@@ -557,10 +602,10 @@ int probe_zamboni_status_direction()
 		{
 			wprintf(&train_window, ">..... &d", counter);
 				
-			if(get_segment_status("7") == '1')
+			if(probe_track_segment("7") == '1')
 			{ flag = 2; break; }
 			
-			if(get_segment_status("4") == '1')
+			if(probe_track_segment("4") == '1')
 			{ flag = 3; break; }
 		}
 	}
@@ -581,7 +626,7 @@ int probe_zamboni_status_direction()
 }
 
 
-// find configuration and execute 
+// find and execute the appropriate configuration by probing the track segments and vehicle position.
 void init_train_configuration()
 {	
 	int conf = 0;
@@ -589,17 +634,17 @@ void init_train_configuration()
 	
 	
 	// detect vehicle positions 
-	if(get_segment_status("5") == '1')
+	if(probe_track_segment("5") == '1')
 	{
 		// config 3 or 4 
-		if(get_segment_status("11") == '1')
+		if(probe_track_segment("11") == '1')
 			conf = 3;
 		
-		if(get_segment_status("16") == '1')
+		if(probe_track_segment("16") == '1')
 			conf = 4;	
 	}
 	else 
-		if(get_segment_status("8") == '1')
+		if(probe_track_segment("8") == '1')
 			conf = 12;
 	
 	if(direction == 0)
@@ -607,13 +652,13 @@ void init_train_configuration()
 		switch(conf)
 		{
 		   case 3: 
-				config3();
+				configuration_3();
 				break; 
 		   case 4: 
-				config4();
+				configuration_4();
 				break;
 		   case 12: 
-				config12();
+				configuration_1_2();
 				break;
 		   default: 
 				break;
@@ -624,28 +669,33 @@ void init_train_configuration()
 		switch(conf)
 		{
 		   case 3: 
-				config3z();
+				configuration_3_With_Zamboni();
 				break; 
 		   case 4: 
-				config4z();
+				configuration_4_With_Zamboni();
 				break;
 		   case 12: 
 				if(direction == 2) 
-					config1z();
+					configuration_1_With_Zamboni();
 				else if(direction == 3)
-					config2z();
+					configuration_2_With_Zamboni();
 				break;
 		   default: 
 				break;
 		}		
 	}
+
+	print_status_message();
 } 
+
 
 
 //////////////////////////////////////////////////////////////////////
 void train_process(PROCESS self, PARAM param)
 {	
 	wprintf(&train_window, "\n\n        Train Process Started!!!\n\n");
+	//&train_window = (WINDOW*) param;
+
 	// initialize the train configuration.
 	init_train_configuration();
 	
@@ -657,6 +707,6 @@ void train_process(PROCESS self, PARAM param)
 
 // init_train function creates the train process
 void init_train()
-{
+{	
 	create_process(train_process, 5, 0, "Train Process");
 }

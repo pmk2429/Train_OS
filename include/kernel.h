@@ -22,6 +22,8 @@ int k_strlen(const char* str);
 void* k_memcpy(void* dst, const void* src, int len);
 int k_memcmp(const void* b1, const void* b2, int len);
 int k_strcmp(const char* str1, const char* str2);
+int atoi(const char* str);
+BOOL is_num(const char *str);
 
 
 /*=====>>> mem.c <<<========================================================*/
@@ -269,7 +271,7 @@ void init_keyb();
 
 /*=====>>> shell.c <<<===================================================*/
 
-#define MAX_COMMANDS 15
+#define MAX_COMMANDS 25
 extern WINDOW shell_window;
 extern WINDOW train_window;
 
@@ -286,7 +288,7 @@ void tos_prompt();
 void print_string(char* str);
 void trim_whitespaces(char*, int);
 command* lookup_command_array(const command *commands, const char *user_input_command);
-void dispatch_command(void (*func) , char *name, char *description, command *command);
+void dispatch_command(void (*func) (char *args) , char *name, char *description, command *command);
 
 /*=====>>> train.c <<<===================================================*/
 

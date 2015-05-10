@@ -50,3 +50,35 @@ int k_strcmp(const char* str1, const char* str2)
 		return (0);
 	}
 }
+
+int atoi(const char* str)
+{
+	int num = 0;
+	BOOL flag = FALSE;
+	while (*str != '\0')
+	{
+		if (*str >= '0' && *str <= '9')
+		{
+			num = num * 10 + *str - '0';
+			flag = TRUE;
+		}
+		else if (!flag && (*str == ' ' || *str == '\t'))
+		{
+			continue;
+		}
+		else
+		{
+			break;
+		}
+		str++;
+	}
+	return num;
+}
+
+BOOL is_num(const char *str)
+{
+	if (*str >= '0' && *str <= '9')
+		return TRUE;
+	else 
+		return FALSE;
+}
