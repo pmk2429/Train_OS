@@ -479,9 +479,9 @@ void init_shell()
 	// initialize all the functions for basic Train commands
 	dispatch_command(help_train, "help-train", "Helper function for Train Process", &commands_array[counter++]);
 	dispatch_command(stop_train, "stop", "function to stop the train", &commands_array[counter++]);
-	dispatch_command(go_train, "go", "function to set train to specific speed", &commands_array[counter++]);
+	dispatch_command(go_train, "go", "function to set train to specific speed [requires <args>]; Eg: go 4", &commands_array[counter++]);
 	dispatch_command(reverse_train, "reverse", "reverse the direction of train", &commands_array[counter++]);
-	dispatch_command(check_track_status_train, "check", "check the track segment for vehicle", &commands_array[counter++]);
+	dispatch_command(check_track_status_train, "check", "check the track segment for vehicle. [requires <args>]; Eg: check 10", &commands_array[counter++]);
 	
 
 	// testing function

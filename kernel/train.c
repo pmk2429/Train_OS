@@ -122,6 +122,26 @@ char probe_track_segment(char* segmentID)
 }
 
 
+void probe_track(char *trackID, int action, char *speed){
+
+	if(action == 0){
+		while(1){
+			if(probe_track_segment(trackID) == '1'){
+				stop_func_train();
+				break;
+			}		
+		}
+	}
+	else{
+		while(1){
+			if(probe_track_segment(trackID) == '1'){
+				set_train_speed(speed);
+				break;
+			}		
+		}	
+	}	
+}
+
 ////////////////////////////////////////////////////////////////////////
 //************* Functions for Commands executed from Shell************//
 
@@ -150,8 +170,11 @@ void demo_function(char* args){
 // function to solve config 1 or 2 without zamboni 
 void configuration_1_2()
 {	
-	wprintf(&train_window, "\n\n               Running Configuration 1 | 2 without Zamboni...\n\n");
 	
+	print_status_message(2, 12, 0);
+	
+	char *dummySpeed = "!";
+
 	// set switches required for train path
 	set_switch("4","R");
 	set_switch("3","G");
@@ -160,29 +183,15 @@ void configuration_1_2()
 	
 	set_train_speed("5");
 	
-	while(1)
-	{
-	 	if(probe_track_segment("1") == '1')
-	 	{
-			stop_func_train();
-			break;
-		}
-			
-	}
-	
+	probe_track("1", 0, dummySpeed);
 	
 	change_direction();
-	wprintf(&train_window, "\n\n                Going back to base...\n\n");
+	
+	print_status_message(0, 0, 0);
+
 	set_train_speed("5");
 	
-	while(1)
-	{
-	 	if(probe_track_segment("8") == '1')
-	 	{
-			stop_func_train();
-			break;
-		}
-	}
+	probe_track("8", 0, dummySpeed);
 	
 	//print_status_message();
 	
@@ -192,9 +201,11 @@ void configuration_1_2()
 void configuration_3()
 {
 	
-	wprintf(&train_window, "\n\n               Running Configuration 3 without Zamboni...\n\n");
+	print_status_message(2, 3, 0);
 	// set switches required for train path
 	
+	char *dummySpeed = "!";
+
 	set_switch("5","R");
 	set_switch("6","G");
 	set_switch("7","R");
@@ -204,32 +215,21 @@ void configuration_3()
 	
 	set_train_speed("4");
 	
-	while(1)
-	{
-	 	if(probe_track_segment("12") == '1')
-	 	{ stop_func_train(); break; }
-	}
+	probe_track("12", 0, dummySpeed);
 	
 	change_direction();
 	set_train_speed("4");
 	
-	while(1)
-	{
-	 	if(probe_track_segment("13") == '1')
-	 	{ stop_func_train(); break; }
-	}
+	probe_track("13", 0, dummySpeed);
 	
 	change_direction();
-	wprintf(&train_window, "\n\n                  Going back to base...\n\n");
+
+	print_status_message(0, 0, 0);
+	
 	set_train_speed("5");
 	
-	while(1)
-	{
-	 	if(probe_track_segment("5") == '1')
-	 	{ stop_func_train(); break; }
-	}	
-	
-	//print_status_message();
+	probe_track("5", 0, dummySpeed);
+
 }
 
 
@@ -237,7 +237,10 @@ void configuration_3()
 void configuration_4()
 {
 	
-	wprintf(&train_window, "\n\n               Running Configuration 4 without Zamboni...\n\n");
+	print_status_message(2, 4, 0);
+
+	char *dummySpeed = "!";
+
 	// set switches required for train path
 	set_switch("5","G");
 	set_switch("9","G");
@@ -247,25 +250,25 @@ void configuration_4()
 	
 	set_train_speed("4");
 	
+	//probe_track("14");
+
 	while(1)
 	{
 	 	if(probe_track_segment("14") == '1')
 	 	{ 
-			sleep(1300);
+			sleep(1000);
 			stop_func_train(); 
 			break; 
 		}
 	}
 	
 	change_direction();
-	wprintf(&train_window, "\n\n                Going back to base...\n\n");
+
+	print_status_message(0 ,0, 0);
+	
 	set_train_speed("5");
 	
-	while(1)
-	{
-	 	if(probe_track_segment("5") == '1')
-	 	{ stop_func_train(); break; }
-	}	
+	probe_track("5", 0, dummySpeed);
 	
 	
 	//print_status_message();
@@ -276,103 +279,82 @@ void configuration_4()
 void configuration_1_With_Zamboni()
 {
 	
-	wprintf(&train_window, "\n\n               Running Configuration 1 with Zamboni...\n\n");
+	print_status_message(2, 1, 1);
 	// set switches required for train path
+
+	char *dummySpeed = "!";
+
 	set_switch("5","G");
 	set_switch("9","R");
 	set_switch("1","R");
 	set_switch("2","R");
 	set_switch("7","R");	
 	
-	while(1)
-	{
-	 	if(probe_track_segment("12") == '1')
-	 	{ set_train_speed("4"); break; }
-	}	
+	
+	probe_track("12", 1, "4");
+
 	
 	set_switch("5","R");
 	set_switch("6","R");
 	set_switch("4","R");
 	set_switch("3","G");
 	
-	while(1)
-	{
-	 	if(probe_track_segment("1") == '1')
-	 	{ stop_func_train(); break; }
-	}	
+	probe_track("1", 0, dummySpeed);
 	
 	change_direction();
-	wprintf(&train_window, "\n\n                 Going back to base...\n\n");
+
+	print_status_message(0, 0, 0);
+	
 	set_train_speed("5");
 	
-	while(1)
-	{
-	 	if(probe_track_segment("8") == '1')
-	 	{ stop_func_train(); break; }
-	}	
-	
-	
-	//print_status_message();
+	probe_track("8", 0, dummySpeed);	
 }
 
 
 // configuration 1 with zamboni 
 void configuration_2_With_Zamboni()
 {
-	wprintf(&train_window, "\n\n               Running Configuration 2 with Zamboni...\n\n");
+	print_status_message(2, 2, 1);
+
+	char *dummySpeed = "!";
 	
 	// set switches required for train path
 	set_switch("8","R");
-	
-	while(1)
-	{
-	 	if(probe_track_segment("11") == '1')
-	 	{ set_train_speed("4"); break; }
-	}	
+
+	probe_track("11", 1, "4");
 	
 	set_switch("5","R");
 	set_switch("6","R");
 	set_switch("4","R");
 	set_switch("3","G");
 	
-	while(1)
-	{
-	 	if(probe_track_segment("1") == '1')
-	 	{ stop_func_train(); break; }
-	}	
+	probe_track("1", 0, dummySpeed);
 	
 	change_direction();
-	wprintf(&train_window, "\n\n                  Going back to base...\n\n");
+
+	// print status for returning to base
+	print_status_message(0, 0, 0);
+
 	set_train_speed("5");
 	
-	while(1)
-	{
-	 	if(probe_track_segment("8") == '1')
-	 	{ stop_func_train(); break; }
-	}	
-	
-	
-	//print_status_message();
+	// probe track to come to an end and stop
+	probe_track("8", 0, dummySpeed);
 }
 
 
 // configuration 3 with zamboni
 void configuration_3_With_Zamboni()
 {
-	wprintf(&train_window, "\n\n               Running Configuration 3 with Zamboni...\n\n");
-	// set switches required for train path
+	print_status_message(2, 3, 1);
+	char *dummySpeed = "!";
+
 	set_switch("5","G");
 	set_switch("9","R");
 	set_switch("1","G");
 	
-	while(1)
-	{
-	 	if(probe_track_segment("6") == '1')
-	 	{ 
-	 		set_train_speed("4"); 
-	 		break; 
-	 	}
-	}	
+	
+	probe_track("6", 1, "4");
+	
 	
 	while(1)
 	{
@@ -383,53 +365,31 @@ void configuration_3_With_Zamboni()
 		}
 	}	
 	
-	while(1)
-	{
-	 	if(probe_track_segment("12") == '1')
-	 	{ 
-	 		stop_func_train(); 
-		  	set_switch("5","G");	
-		  	set_switch("7","R");	
-		  	break;
-		}
-	}	
+	probe_track("12", 0, dummySpeed);
+
+	set_switch("5","G");	
+	set_switch("7","R");
 	
 	change_direction();
 	
-	while(1)
-	{
-	 	if(probe_track_segment("14") == '1')
-	 	{
-			set_train_speed("4");
-			break;
-		}
-	}
+	probe_track("14", 1, "4");
 	
-	while(1)
-	{
-	 	if(probe_track_segment("13") == '1')
-	 	{   
-	 		stop_func_train(); 
-			set_switch("8","R");
-			break; 
-		}
-	}	
+	probe_track("13", 0, dummySpeed);
+	
+	set_switch("8","R");
 	
 	change_direction();
+
 	set_train_speed("4");
 	
-	while(1)
-	{
-	 	if(probe_track_segment("12") == '1')
-	 	{ 
-	 		stop_func_train(); 
-		  	set_switch("7","G"); 	
-			break;
-		 }
-	}	
+	probe_track("12", 0, dummySpeed);
+		
+	set_switch("7","G"); 
 	
 	change_direction();
-	wprintf(&train_window, "\n\n               Going back to base...\n\n");
+	
+	// print status for returning to base
+	print_status_message(0, 0, 0);
 
 	while(1)
 	{
@@ -456,14 +416,8 @@ void configuration_3_With_Zamboni()
 		}
 	}	
 	
-	while(1)
-	{
-	 	if(probe_track_segment("5") == '1')
-	 	{ 
-	 		stop_func_train(); 
-	 		break; 
-	 	}
-	}	
+	// probe track to come to an end and stop.
+	probe_track("5", 0, dummySpeed);	
 
 }
 
@@ -471,7 +425,9 @@ void configuration_3_With_Zamboni()
 void configuration_4_With_Zamboni()
 {
 	
-	wprintf(&train_window, "\n\n		     Running Configuration 4 with Zamboni...\n\n");
+	print_status_message(2, 4, 1);
+
+	char *dummySpeed = "!";
 	
 	set_train_speed("4");
 	
@@ -479,42 +435,32 @@ void configuration_4_With_Zamboni()
 	set_switch("5","R");
 	set_switch("6","G");
 	
-	while(1)
-	{
-	 	if(probe_track_segment("9") == '1')
-	 	{ stop_func_train(); break; }
-	}	
+	probe_track("9", 0, dummySpeed);
 	
-	while(1)
-	{
-	 	if(probe_track_segment("12") == '1')
-	 	{ set_train_speed("4"); break; }
-	}		
+	probe_track("12", 1, "4");	
 
 	set_switch("8","G");
 	set_switch("4","G");
 	set_switch("9","G");
 	
-	sleep(1500);
+	sleep(1400);
 	
-	while(1)
-	{
-	 	if(probe_track_segment("14") == '1')
-	 	{ stop_func_train(); break; }
-	}
+	probe_track("14", 0, dummySpeed);
 	
 	change_direction();
-	wprintf(&train_window, "\n\n                 Going back to base...");
+	
 	set_train_speed("4");
+	
 	sleep(1000);
+	
+	// print status for returning to base
+	print_status_message(0, 0, 0);
+	
 	stop_func_train();
+	
 	change_direction();
 	
-	while(1)
-	{
-	 	if(probe_track_segment("14") == '1')
-	 	{ set_train_speed("4"); break; }
-	}
+	probe_track("14", 1, "4");
 	
 	while(1)
 	{
@@ -536,25 +482,9 @@ void configuration_4_With_Zamboni()
 		}
 	}
 	
-	while(1)
-	{
-	 	if(probe_track_segment("5") == '1')
-	 	{ 	stop_func_train();
-			break; 
-		}
-	}
-	
-	//print_status_message();
+	// probe track to come to an end.
+	probe_track("5", 0, dummySpeed);
 }
-
-
-// print the status of the job once its done.
-void print_status_message()
-{
-	wprintf(&train_window, "\n\n       Mission Accomplished => Wagon taken back successfully!");
-	wprintf(&train_window, "\n\n       Job Done!!!!!");
-}
-
 
 
 // initialize the tracks for default configuration.
@@ -584,7 +514,7 @@ int probe_zamboni_status_direction()
 	char* present;
 	char* direction;
 	
-	wprintf(&train_window, "\n\n     Finding Zamboni....\n\n");
+	wprintf(&train_window, "\n\n               Finding Zamboni....\n\n");
 	
 	// loop until the the counter detects the track segment 6.
 	for(counter = 0; counter < 35; counter++)
@@ -597,16 +527,23 @@ int probe_zamboni_status_direction()
 		}
 	}
 	
+	// if flag is set, then keep probing to determine the direction - clockwise | anticlockwise
 	if(flag){
 		for(counter = 0; counter < 5; counter++)
 		{
 			wprintf(&train_window, ">..... &d", counter);
 				
-			if(probe_track_segment("7") == '1')
-			{ flag = 2; break; }
+			// clockwise direction
+			if(probe_track_segment("7") == '1'){ 
+				flag = 2; 
+				break; 
+			}
 			
-			if(probe_track_segment("4") == '1')
-			{ flag = 3; break; }
+			// anti clockwise direction
+			if(probe_track_segment("4") == '1'){ 
+				flag = 3; 
+				break; 
+			}
 		}
 	}
 	
@@ -616,10 +553,17 @@ int probe_zamboni_status_direction()
 
 	if(flag == 2){direction = "CLOCKWISE";}
 	if(flag == 3){direction = "ANTI-CLOCKWISE";}
+
 	
-	wprintf(&train_window, "\n\n          Zamboni is '%s'",  present);
-	wprintf(&train_window, " and moving in '%s' direction\n\n",  direction);
+	if(flag == 0){
+		wprintf(&train_window, "\n\n                  Zamboni is '%s' \n\n",  present);
+	}
 	
+	if(flag){
+		wprintf(&train_window, "\n\n          Zamboni is '%s'",  present);
+		wprintf(&train_window, " and is moving in '%s' direction\n\n",  direction);
+	}
+
 	// by the end of this loop we will get to know that is Zamboni present or not
 	// and If Zamboni is present, what is the direction of Zamboni.	
 	return flag;
@@ -629,27 +573,33 @@ int probe_zamboni_status_direction()
 // find and execute the appropriate configuration by probing the track segments and vehicle position.
 void init_train_configuration()
 {	
-	int conf = 0;
+	int configuration = 0;
 	int direction = probe_zamboni_status_direction();
 	
 	
 	// detect vehicle positions 
 	if(probe_track_segment("5") == '1')
 	{
-		// config 3 or 4 
-		if(probe_track_segment("11") == '1')
-			conf = 3;
-		
-		if(probe_track_segment("16") == '1')
-			conf = 4;	
+		// config 3 
+		if(probe_track_segment("11") == '1'){
+			configuration = 3;
+		}
+		// config 4
+		if(probe_track_segment("16") == '1'){
+			configuration = 4;	
+		}
 	}
-	else 
-		if(probe_track_segment("8") == '1')
-			conf = 12;
+	else {
+		if(probe_track_segment("8") == '1'){
+			configuration = 12;
+		}
+	}
 	
+
+	// once direction is determined, switch an appropriate configuration.
 	if(direction == 0)
 	{
-		switch(conf)
+		switch(configuration)
 		{
 		   case 3: 
 				configuration_3();
@@ -666,7 +616,7 @@ void init_train_configuration()
 	}
 	else
 	{
-		switch(conf)
+		switch(configuration)
 		{
 		   case 3: 
 				configuration_3_With_Zamboni();
@@ -685,8 +635,37 @@ void init_train_configuration()
 		}		
 	}
 
-	print_status_message();
+	print_status_message(1, 0, 0);
 } 
+
+
+/*	print the status of the job once its done.
+	
+	statusID = 0 => Going back to base.
+	statusID = 1 => Mission Accomplished.
+	statusID = 2 => Running Configuration display messages.	
+	
+*/
+void print_status_message(int statusID, int configID, int configZamboniID){
+
+	if(statusID == 0){
+		wprintf(&train_window, "\n\n\n       Wagon Attached. Going Back to Base\n\n\n");
+	}else if(statusID == 1){
+		wprintf(&train_window, "\n\n\n       Mission Accomplished => Wagon taken back successfully!");
+		wprintf(&train_window, "\n\n                            Job Done!!!!!\n\n");
+	}else if(statusID == 2){
+		if(configZamboniID == 0){
+			if(configID == 12){
+				wprintf(&train_window, "\n\n\n		         Running Configuration 1 | 2 WITHOUT Zamboni...\n\n\n\n");
+			}else{
+				wprintf(&train_window, "\n\n\n		         Running Configuration %d WITHOUT Zamboni...\n\n\n\n", configID);
+			}
+		}else if(configZamboniID == 1){
+			wprintf(&train_window, "\n\n\n		         Running Configuration %d WITH Zamboni...\n\n\n\n", configID);
+		}
+
+	}	
+}
 
 
 
